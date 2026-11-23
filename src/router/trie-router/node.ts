@@ -125,6 +125,13 @@ export class Node<T> {
           // Wildcard
           // '/hello/*/foo' => match /hello/bar/foo
           if (typeof pattern === 'string') {
+            // A request part that literally matches the child key (e.g. a
+            // path segment of `*`) is already handled by the `#children[part]`
+            // lookup above. Skipping the pattern branch here prevents the
+            // handler from being pushed twice.
+            if (child === nextNode) {
+              continue
+            }
             if (pattern === '*' || part.startsWith(pattern.slice(0, -1))) {
               this.#pushHandlerSets(handlerSets, child, method, node.#params)
               if (pattern === '*') {

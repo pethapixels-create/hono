@@ -188,6 +188,23 @@ export const runTest = ({
         expect(res[1].handler).toEqual('posts')
         expect(res[2].handler).toEqual('fallback')
       })
+
+      it('A literal `*` path segment does not run a wildcard handler twice', async () => {
+        router.add('GET', '/a/*', 'wildcard middleware')
+        router.add('GET', '/a/b', 'static')
+
+        // A normal request runs the wildcard middleware exactly once.
+        let res = match('GET', '/a/b')
+        expect(res.length).toBe(2)
+        expect(res[0].handler).toEqual('wildcard middleware')
+        expect(res[1].handler).toEqual('static')
+
+        // A request whose last segment is literally `*` must also run the
+        // wildcard middleware exactly once, not twice.
+        res = match('GET', '/a/*')
+        expect(res.length).toBe(1)
+        expect(res[0].handler).toEqual('wildcard middleware')
+      })
     })
 
     describe('Registration order', () => {
